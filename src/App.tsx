@@ -4,6 +4,7 @@ import CodeMirror from "@uiw/react-codemirror";
 
 import { useWindowHeight } from "@react-hook/window-size";
 import { parseToObject } from "./components/HCLParser";
+import { init_wasm } from "./components/HCLParser";
 
 const initialValue = `resource "foo" "bar" {
   value = "⚠️ awesome ⚠️"
@@ -11,15 +12,17 @@ const initialValue = `resource "foo" "bar" {
 `;
 
 function App() {
+  const [loading, setLoading] = useState(true);
   const [hclContent, setHclContent] = useState("");
   const [height, setHeight] = useState(0);
   const divRef = useRef<HTMLDivElement>(null);
   const windowHeight = useWindowHeight();
 
   useEffect(() => {
-    setTimeout(() => {
+    init_wasm(() => {
       setHclContent(initialValue);
-    }, 500);
+      setLoading(false);
+    });
   }, []);
 
   useEffect(() => {
@@ -32,7 +35,12 @@ function App() {
   };
 
   return (
-    <div className="container mx-auto h-full">
+    <div className="container relative mx-auto h-full">
+      {loading && (
+        <div className="absolute w-full text-center top-10 text-gray-600">
+          Loading WASM binary...
+        </div>
+      )}
       <div className="py-5">
         <h1 className=" text-2xl">HCL v2 to JSON</h1>
         <p className="text-gray-600">
